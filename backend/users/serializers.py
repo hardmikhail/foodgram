@@ -1,4 +1,4 @@
-from djoser.serializers import UserCreateSerializer, TokenCreateSerializer
+from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers
 
 from users.models import User
@@ -32,7 +32,7 @@ class CustomUserCreateSerializer(UserCreateSerializer):
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
-    is_subscribed = serializers.BooleanField(default=False)
+    is_subscribed = serializers.BooleanField(default=True)
 
     class Meta:
         fields = ('email', 'id', 'username', 'first_name', 'last_name', 'is_subscribed')

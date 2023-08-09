@@ -24,7 +24,6 @@ SECRET_KEY = 'django-insecure-$ir=#wc$&*pksl&^lenzy&x0d)i5=0@m-dp3q$7v6ee$qtnbfo
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '[::1]', 'host.docker.internal']
 
 
@@ -126,6 +125,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
@@ -144,6 +144,8 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
     ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
 }
 
 DJOSER = {
@@ -152,10 +154,10 @@ DJOSER = {
     # 'ACTIVATION_URL': '#/activate/{uid}/{token}',
     # 'SEND_ACTIVATION_EMAIL': True,
     'SERIALIZERS': {
-        'user_create': 'users.serializers.CustomUserCreateSerializer',
+        'user_create': 'api.serializers.CustomUserCreateSerializer',
         'token_create': 'djoser.serializers.TokenCreateSerializer',
-        'user': 'users.serializers.CustomUserSerializer',
-        'current_user': 'users.serializers.CustomUserSerializer',
+        'user': 'api.serializers.CustomUserSerializer',
+        'current_user': 'api.serializers.CustomUserSerializer',
     },
     'LOGIN_FIELD': 'email'
 }

@@ -6,8 +6,8 @@ from django.core.validators import MinValueValidator
 from users.models import User
 
 class Tag(models.Model):
-    name = models.CharField(max_length=200)
-    color = models.CharField(max_length=7)
+    name = models.CharField(unique=True, max_length=200)
+    color = models.CharField(unique=True, max_length=7)
     slug = models.SlugField(unique=True, max_length=200)
 
     def __str__(self):
@@ -19,11 +19,11 @@ class Recipe(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     ingredients = models.ManyToManyField('Ingredient', through='RecipeIngredient')
     name = models.CharField(max_length=200)
-    # image = models.ImageField(
-    #     upload_to='recipes/images/',
-    #     null=True,
-    #     default=None
-    # )
+    image = models.ImageField(
+        upload_to='recipes/images/',
+        null=True,
+        default=None
+    )
     text = models.TextField()
     cooking_time = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
 
@@ -51,6 +51,14 @@ class RecipeTag(models.Model):
 
     def __str__(self):
         return self.recipe.name
+
+class Subscribe(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='follower'
+    )
+    following = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='following'
+    )
 
 
 
