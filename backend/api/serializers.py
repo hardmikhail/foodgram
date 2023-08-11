@@ -8,7 +8,7 @@ from rest_framework.validators import ValidationError
 
 from users.models import User
 
-from recipes.models import Tag, Ingredient, Recipe, RecipeIngredient, RecipeTag, Subscribe
+from recipes.models import Tag, Ingredient, Recipe, RecipeIngredient, Subscribe
 from users.serializers import CustomUserSerializer
 import webcolors
 
@@ -31,46 +31,6 @@ import webcolors
 #     class Meta:
 #         fields = ('new_password', 'current_password')
 #         model = User
-
-
-class CustomUserCreateSerializer(UserCreateSerializer):
-
-    class Meta:
-        fields = ('email', 'id','username', 'first_name', 'last_name', 'password')
-        model = User
-        extra_kwargs = {
-            'email': {
-                'error_messages': {'required': 'Обязательное поле'},
-                'required': True
-                }, 
-            'id': {'read_only': True},
-            'username': {'error_messages': {'required': 'Обязательное поле'}},
-            'first_name': {
-                'error_messages': {'required': 'Обязательное поле'},
-                'required': True
-                },
-            'last_name': {
-                'error_messages': {'required': 'Обязательное поле'},
-                'required': True
-                },
-            'password': {
-                'error_messages': {'required': 'Обязательное поле'},
-                'required': True,
-                }, 
-        }
-
-
-class CustomUserSerializer(serializers.ModelSerializer):
-    is_subscribed = serializers.BooleanField(default=False)
-    # is_subscribed = serializers.SerializerMethodField()
-
-    # def get_is_subscribed(self, obj):
-    #     print('LOOL', Subscribe.objects.filter(user=obj).exists())
-    #     return Subscribe.objects.filter(user=obj).exists()
-
-    class Meta:
-        fields = ('email', 'id', 'username', 'first_name', 'last_name', 'is_subscribed')
-        model = User
 
 class Hex2NameColor(serializers.Field):
     def to_representation(self, value):
@@ -129,7 +89,18 @@ class RecipeSerializer(serializers.ModelSerializer):
     is_in_shopping_cart = serializers.BooleanField(default=False)
 
     class Meta:
-        fields = ('id', 'tags', 'author', 'ingredients', 'is_favorited', 'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time')
+        fields = (
+            'id',
+            'tags',
+            'author',
+            'ingredients',
+            'is_favorited',
+            'is_in_shopping_cart',
+            'name',
+            'image',
+            'text',
+            'cooking_time'
+        )
         model = Recipe
 
 class RecipeIngredientPOSTSerializer(serializers.ModelSerializer):
@@ -193,22 +164,41 @@ class RecipesPOSTSerializer(serializers.ModelSerializer):
         fields = ('id', 'tags', 'author', 'ingredients', 'name', 'image', 'text', 'cooking_time')
         model = Recipe
 
+class RecipeShortSerializer(serializers.ModelSerializer):
+    image = Base64ImageField()
+
+    class Meta:
+        fields = ('id', 'name', 'image', 'cooking_time')
+        read_only_fields = ('id', 'name', 'image', 'cooking_time')
+        model = Recipe
+
 class SubscribeSerializer(serializers.ModelSerializer):
-    user = serializers.SlugRelatedField(slug_field='username', read_only=True)
-
-
+    # user = serializers.SlugRelatedField(slug_field='username', read_only=True)
+    # recipes = RecipeShortSerializer(many=True, read_only=True)
+    recipes = serializers.SerializerMethodField()
+    is_subscribed = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
+    # email = serializers.ReadOnlyField()
+        
     class Meta:
-        fields = ('user',)
-        model = Subscribe
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'recipes',
+            'recipes_count'
+        )
+        model = User
 
-class SubscribeListSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(source='following.email')
-    id = serializers.ReadOnlyField(source='following.id')
-    username = serializers.ReadOnlyField(source='following.username')
-    first_name = serializers.ReadOnlyField(source='following.first_name')
-    last_name = serializers.ReadOnlyField(source='following.last_name')
-    is_subscribed = serializers.ReadOnlyField(source='following.is_subscribed')
-
-    class Meta:
-        fields = ('email', 'id', 'username', 'first_name', 'last_name', 'is_subscribed', 'recipes')
-        model = Subscribe
+    def get_is_subscribed(self, obj):
+        user = self.context.get('request').user
+        return user.follower.filter(following=obj).exists()
+    
+    def get_recipes_count(self, obj):
+        return Recipe.objects.filter(author=obj).count()
+    
+    def get_recipes(self,obj):
+        return RecipeShortSerializer(Recipe.objects.filter(author=obj), many=True).data

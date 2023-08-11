@@ -5,11 +5,11 @@ from rest_framework.viewsets import GenericViewSet, ReadOnlyModelViewSet
 from rest_framework.validators import ValidationError
 from rest_framework.decorators import action
 from rest_framework.views import APIView
-
+from djoser.views import UserViewSet
 
 from users.models import User
 from recipes.models import Tag, Ingredient, Recipe, Subscribe
-from .serializers import (TagsSerializer, IngredientsSerializer, RecipeSerializer, RecipesPOSTSerializer, SubscribeSerializer, SubscribeListSerializer)
+from .serializers import (TagsSerializer, IngredientsSerializer, RecipeSerializer, RecipesPOSTSerializer, SubscribeSerializer)
 
 
 class TagsVeiwSet(ReadOnlyModelViewSet):
@@ -38,16 +38,11 @@ class RecipesVeiwSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-class SubscribeListViewSet(mixins.ListModelMixin, GenericViewSet):
-    queryset = Subscribe.objects.all()
-    serializer_class = SubscribeListSerializer
-
 
 class ShoppingCartViewSet(mixins.CreateModelMixin, GenericViewSet):
     queryset = Recipe.objects.all()
 
 class SubscribeViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin, GenericViewSet):
-# class SubscribeViewSet(generics.ListAPIView):
 
     queryset = Subscribe.objects.all()
     serializer_class = SubscribeSerializer
@@ -127,34 +122,43 @@ class SubscribeViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin, Generi
 #             return response.Response(serializer.data, status=status.HTTP_201_CREATED)
 #         return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class SubscribeViewSet(viewsets.ViewSet):
-    queryset = Subscribe.objects.all()
-    serializer_class = SubscribeSerializer
-        
-    
+class SubscribeViewSet(UserViewSet):
+    @action(detail=False)
+    def subscriptions(self, request):
+        user = self.request.user
+        subscriptions = User.objects.filter(following__user=request.user)
+        pages = self.paginate_queryset(subscriptions)
+        serializer = SubscribeSerializer(pages, context={'request': request},many=True)
+        # return response.Response(serializer.data, status=status.HTTP_200_OK)
+        return self.get_paginated_response(serializer.data)
+
     @action(detail=True, methods=['post', 'delete'])
-    def subscribe(self, request, pk=None):
-        serializer = SubscribeSerializer(data=request.data)
-        if serializer.is_valid():
-            if request.method == 'POST':
-                if Subscribe.objects.filter(
-                    user=self.request.user,
-                    following=User.objects.get(id=self.kwargs.get('pk'))
-                ).exists():
-                    raise ValidationError('Подписка уже оформлена!')
-                if User.objects.get(
-                    id=self.kwargs.get('pk')) == self.request.user:
-                    raise ValidationError('Нельзя подписаться на самого себя!')
-                serializer.save(
-                    user = self.request.user,
-                    following=User.objects.get(id=self.kwargs.get('pk'))
-                )
-                return response.Response(serializer.validated_data, status=status.HTTP_201_CREATED)
-            if request.method == 'DELETE':
-                subs = Subscribe.objects.filter(
-                    user=self.request.user,
-                    following=User.objects.get(id=self.kwargs.get('pk'))
-                )
-                if subs.exists():
-                    subs.delete()
-                    return response.Response(serializer.validated_data, status=status.HTTP_204_NO_CONTENT)
+    def subscribe(self, request, id=None):
+        user = self.request.user
+        following=User.objects.get(id=self.kwargs.get('id'))
+        serializer = SubscribeSerializer(following, context={'request': request})
+        if request.method == 'POST':
+            if Subscribe.objects.filter(
+                user=user,
+                following=User.objects.get(id=self.kwargs.get('id'))
+            ).exists():
+                raise ValidationError('Подписка уже оформлена!')
+            if User.objects.get(
+                id=self.kwargs.get('id')) == self.request.user:
+                raise ValidationError('Нельзя подписаться на самого себя!')
+            Subscribe.objects.create(
+                user = self.request.user,
+                following=following
+            )
+            serializer = SubscribeSerializer(following, context={'request': request})
+            return response.Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        if request.method == 'DELETE':
+            subscribe = Subscribe.objects.filter(
+                user=self.request.user,
+                following=User.objects.get(id=self.kwargs.get('id'))
+            )
+            if subscribe.exists():
+                subscribe.delete()
+                return response.Response(status=status.HTTP_204_NO_CONTENT)
+            raise ValidationError('Подписка не найдена!')

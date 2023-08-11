@@ -36,9 +36,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'api.apps.ApiConfig',
-    'users.apps.UsersConfig',
-    'recipes.apps.RecipesConfig',
+    'api',
+    'users',
+    'recipes',
     'rest_framework',
     'rest_framework.authtoken',
     'djoser',
@@ -154,10 +154,10 @@ DJOSER = {
     # 'ACTIVATION_URL': '#/activate/{uid}/{token}',
     # 'SEND_ACTIVATION_EMAIL': True,
     'SERIALIZERS': {
-        'user_create': 'api.serializers.CustomUserCreateSerializer',
+        'user_create': 'users.serializers.CustomUserCreateSerializer',
         'token_create': 'djoser.serializers.TokenCreateSerializer',
-        'user': 'api.serializers.CustomUserSerializer',
-        'current_user': 'api.serializers.CustomUserSerializer',
+        'user': 'users.serializers.CustomUserSerializer',
+        'current_user': 'users.serializers.CustomUserSerializer',
     },
     'LOGIN_FIELD': 'email'
 }
