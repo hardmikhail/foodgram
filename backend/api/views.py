@@ -64,8 +64,8 @@ class RecipesVeiwSet(viewsets.ModelViewSet):
                 recipe=recipe
             )
             serializer = serializers.RecipeShortSerializer(
-                    recipe,
-                    context={'request': request}
+                recipe,
+                context={'request': request}
             )
             return response.Response(
                 serializer.data,
@@ -91,8 +91,8 @@ class RecipesVeiwSet(viewsets.ModelViewSet):
                 recipe=recipe
             )
             serializer = serializers.RecipeShortSerializer(
-                    recipe,
-                    context={'request': request}
+                recipe,
+                context={'request': request}
             )
             return response.Response(
                 serializer.data,
