@@ -1,162 +1,180 @@
-from django.shortcuts import render, get_object_or_404
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework import mixins, viewsets, status, response, generics
-from rest_framework.viewsets import GenericViewSet, ReadOnlyModelViewSet
+from django.http import HttpResponse
+from djoser.views import UserViewSet
+from rest_framework import viewsets, status, response, filters
+from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.validators import ValidationError
 from rest_framework.decorators import action
-from rest_framework.views import APIView
-from djoser.views import UserViewSet
+from rest_framework.permissions import AllowAny
+from django.db.models import Sum
+from django_filters.rest_framework import DjangoFilterBackend
 
+from .filters import RecipeFilter
+from .permissions import CustomUsers, CustomAuthor
 from users.models import User
-from recipes.models import Tag, Ingredient, Recipe, Subscribe
-from .serializers import (TagsSerializer, IngredientsSerializer, RecipeSerializer, RecipesPOSTSerializer, SubscribeSerializer)
+from recipes.models import (
+    Tag,
+    Ingredient,
+    Recipe,
+    Subscribe,
+    Favorite,
+    ShoppingCart,
+    RecipeIngredient
+)
+from . import serializers
 
 
 class TagsVeiwSet(ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
-    serializer_class = TagsSerializer
+    serializer_class = serializers.TagsSerializer
     pagination_class = None
+    permission_classes = (AllowAny,)
 
 
 class IngredientsViewSet(ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     pagination_class = None
-    serializer_class = IngredientsSerializer
+    serializer_class = serializers.IngredientsSerializer
+    permission_classes = (AllowAny,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('^name',)
 
 
 class RecipesVeiwSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    pagination_class = LimitOffsetPagination
-    page_size = 10
-    
+    permission_classes = (CustomAuthor,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
 
     def get_serializer_class(self):
+        print(self.action)
         if self.action == 'create' or self.action == 'partial_update':
-            return RecipesPOSTSerializer
-        return RecipeSerializer
+            return serializers.RecipesPOSTSerializer
+        return serializers.RecipeSerializer
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
+    @action(detail=True, methods=['post', 'delete'])
+    def favorite(self, request, pk=None):
+        user = request.user
+        recipe = Recipe.objects.get(id=pk)
+        if request.method == 'POST':
+            Favorite.objects.create(
+                user=user,
+                recipe=recipe
+            )
+            serializer = serializers.RecipeShortSerializer(
+                    recipe,
+                    context={'request': request}
+            )
+            return response.Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED
+            )
 
-class ShoppingCartViewSet(mixins.CreateModelMixin, GenericViewSet):
-    queryset = Recipe.objects.all()
-
-class SubscribeViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin, GenericViewSet):
-
-    queryset = Subscribe.objects.all()
-    serializer_class = SubscribeSerializer
-    # permission_classes = (IsAuthenticated,)
-    # filter_backends = (filters.SearchFilter,)
-    # search_fields = ('following__username',)
-    # @action(methods=['post', 'delete'],
-    #         detail=True
-    # )
-    # def subscribe(self, request, **kwarg):
-    #     user = request.user
-    #     following = get_object_or_404(User, pk=self.kwargs.get('pk'))
-    #     if request.method == 'post':
-    #         serializer = SubscribeSerializer(data=request.data)
-    #         serializer.is_valid(raise_exception=True)
-    #         Subscribe.objects.create(user=user, following=following)
-    #         return response.Response(serializer.data)
-
-    # def get_queryset(self):
-    #     # print(self.kwargs.get('user_id'))
-    #     user = self.request.user
-    #     return Subscribe.objects.filter(user=user)
-
-    # def get_object(self, pk):
-    #     try:
-    #         return Subscribe.objects.get(pk=pk)
-    #     except Subscribe.DoesNotExist:
-    #         raise ValidationError
-    
-    # def delete(self, request, pk, format=None):
-    #         snippet = self.get_object()
-    #         snippet.delete()
-    #         return response.Response(status=status.HTTP_204_NO_CONTENT)
-
-    # @action(detail=False, methods=['post'])
-    def perform_create(self, request, **kwarg):
-        print(self.kwargs.get('user_id'))
-        print(self.request.user)
-        print(User.objects.get(id=self.kwargs.get('user_id')))
-        if Subscribe.objects.filter(
-            user=self.request.user,
-            following=User.objects.get(id=self.kwargs.get('user_id'))
-        ).exists():
-            raise ValidationError('Подписка уже оформлена!')
-        if User.objects.get(
-                id=self.kwargs.get('user_id')) == self.request.user:
-            raise ValidationError('Нельзя подписаться на самого себя!')
-        # sub = self.get_object()
-        serializer = SubscribeSerializer(data=request.data)
-        # if serializer.is_valid():
-        #     print(serializer.validated_data)
-            # sub.sub(serializer.validated_data['password'])
-        serializer.save(
-            user = self.request.user,
-            following=User.objects.get(id=self.kwargs.get('user_id'))
+        favorite = Favorite.objects.filter(
+            user=user,
+            recipe=recipe
         )
-        return response.Response(serializer.data)
-    
+        if favorite.exists():
+            favorite.delete()
+            return response.Response(status=status.HTTP_204_NO_CONTENT)
+        raise ValidationError('Избранное не найдено!')
 
-    # @action(detail=True, methods=['delete'])
-    # def unsub(self, request):
-    #     instance = self.get_object()
-    #     self.perform_destroy(instance)
-    #     return response.Response(status=status.HTTP_204_NO_CONTENT)
-# class SubscribeViewSet:
-#     def perform_action(self, user, following, model, response_text):
-#         model.objects.create(user=user, following=following)
-#         serializer = SubscribeSerializer(following, context={'request': self.request})
-#         return response.Response(serializer.data, status=status.HTTP_201_CREATED)
+    @action(detail=True, methods=['post', 'delete'])
+    def shopping_cart(self, request, pk=None):
+        user = request.user
+        recipe = Recipe.objects.get(id=pk)
+        if request.method == 'POST':
+            ShoppingCart.objects.create(
+                user=user,
+                recipe=recipe
+            )
+            serializer = serializers.RecipeShortSerializer(
+                    recipe,
+                    context={'request': request}
+            )
+            return response.Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED
+            )
 
-# @api_view(['POST', 'DELETE'])
-# def subscribe(request):
-#     if request.method == 'POST':
-#         serializer = SubscribeSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return response.Response(serializer.data, status=status.HTTP_201_CREATED)
-#         return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        shopping_cart = ShoppingCart.objects.filter(
+            user=user,
+            recipe=recipe
+        )
+        if shopping_cart.exists():
+            shopping_cart.delete()
+            return response.Response(status=status.HTTP_204_NO_CONTENT)
+        raise ValidationError('Избранное не найдено!')
+
+    @action(detail=False)
+    def download_shopping_cart(self, request):
+        shopping_list = 'Список покупок'
+        ingredients = (
+            RecipeIngredient.objects.filter(
+                recipe__shopping_cart__user=request.user)
+            .order_by('ingredient__name')
+            .values('ingredient__name', 'ingredient__measurement_unit')
+            .annotate(amount=Sum('amount'))
+        )
+        for ingredient in ingredients:
+            shopping_list += (
+                f'\n{ingredient["ingredient__name"]} - '
+                f'{ingredient["amount"]} '
+                f'{ingredient["ingredient__measurement_unit"]}'
+            )
+        return HttpResponse(shopping_list, content_type='text/plain')
+
 
 class SubscribeViewSet(UserViewSet):
+
+    permission_classes = (CustomUsers,)
+
     @action(detail=False)
     def subscriptions(self, request):
-        user = self.request.user
         subscriptions = User.objects.filter(following__user=request.user)
         pages = self.paginate_queryset(subscriptions)
-        serializer = SubscribeSerializer(pages, context={'request': request},many=True)
-        # return response.Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = serializers.SubscribeSerializer(
+            pages,
+            context={'request': request},
+            many=True
+        )
         return self.get_paginated_response(serializer.data)
 
     @action(detail=True, methods=['post', 'delete'])
     def subscribe(self, request, id=None):
         user = self.request.user
-        following=User.objects.get(id=self.kwargs.get('id'))
-        serializer = SubscribeSerializer(following, context={'request': request})
+        following = User.objects.get(id=id)
+        serializer = serializers.SubscribeSerializer(
+            following,
+            context={'request': request}
+        )
         if request.method == 'POST':
             if Subscribe.objects.filter(
                 user=user,
-                following=User.objects.get(id=self.kwargs.get('id'))
+                following=following
             ).exists():
                 raise ValidationError('Подписка уже оформлена!')
-            if User.objects.get(
-                id=self.kwargs.get('id')) == self.request.user:
+            if User.objects.get(id=id) == self.request.user:
                 raise ValidationError('Нельзя подписаться на самого себя!')
             Subscribe.objects.create(
-                user = self.request.user,
+                user=user,
                 following=following
             )
-            serializer = SubscribeSerializer(following, context={'request': request})
-            return response.Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer = serializers.SubscribeSerializer(
+                following,
+                context={'request': request}
+            )
+            return response.Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED
+            )
 
         if request.method == 'DELETE':
             subscribe = Subscribe.objects.filter(
-                user=self.request.user,
-                following=User.objects.get(id=self.kwargs.get('id'))
+                user=user,
+                following=following
             )
             if subscribe.exists():
                 subscribe.delete()

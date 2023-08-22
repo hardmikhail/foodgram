@@ -1,9 +1,8 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 
-
-
 from users.models import User
+
 
 class Tag(models.Model):
     name = models.CharField(unique=True, max_length=200)
@@ -17,7 +16,10 @@ class Tag(models.Model):
 class Recipe(models.Model):
     tags = models.ManyToManyField(Tag)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    ingredients = models.ManyToManyField('Ingredient', through='RecipeIngredient')
+    ingredients = models.ManyToManyField(
+        'Ingredient',
+        through='RecipeIngredient'
+    )
     name = models.CharField(max_length=200)
     image = models.ImageField(
         upload_to='recipes/images/',
@@ -25,10 +27,14 @@ class Recipe(models.Model):
         default=None
     )
     text = models.TextField()
-    cooking_time = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
+    cooking_time = models.PositiveIntegerField(
+        default=1,
+        validators=[MinValueValidator(1)]
+    )
 
     def __str__(self):
         return self.name
+
 
 class Ingredient(models.Model):
     name = models.CharField(max_length=200)
@@ -37,13 +43,22 @@ class Ingredient(models.Model):
     def __str__(self):
         return self.name
 
+
 class RecipeIngredient(models.Model):
-    recipe = models.ForeignKey(Recipe, related_name='recipe_ingredients', on_delete=models.CASCADE)
+    recipe = models.ForeignKey(
+        Recipe,
+        related_name='recipe_ingredients',
+        on_delete=models.CASCADE
+    )
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
-    amount = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
+    amount = models.PositiveIntegerField(
+        default=1,
+        validators=[MinValueValidator(1)]
+    )
 
     def __str__(self):
         return self.recipe.name
+
 
 class RecipeTag(models.Model):
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
@@ -51,6 +66,7 @@ class RecipeTag(models.Model):
 
     def __str__(self):
         return self.recipe.name
+
 
 class Subscribe(models.Model):
     user = models.ForeignKey(
@@ -64,4 +80,25 @@ class Subscribe(models.Model):
         return f'{self.user} подписан на {self.following}'
 
 
+class Favorite(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='favorited'
+    )
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE
+    )
 
+    def __str__(self):
+        return f'{self.user} добавил {self.recipe.name} в избранное'
+
+
+class ShoppingCart(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='shopping_cart'
+    )
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, related_name='shopping_cart'
+    )
+
+    def __str__(self):
+        return f'{self.user} добавил {self.recipe.name} в список покупок'
