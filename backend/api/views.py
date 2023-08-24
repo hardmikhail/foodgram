@@ -148,7 +148,7 @@ class SubscribeViewSet(UserViewSet):
     def subscribe(self, request, id=None):
         user = self.request.user
         following = User.objects.get(id=id)
-#НУЖНА ПОМОЩЬ С ПЕРЕНОСОМ ЭТОЙ ЛОГИКИ В СЕРИАЛИЗАТОР
+    # НУЖНА ПОМОЩЬ С ПЕРЕНОСОМ ЭТОЙ ЛОГИКИ В СЕРИАЛИЗАТОР
         if request.method == 'POST':
             if Subscribe.objects.filter(
                 user=user,

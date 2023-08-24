@@ -7,6 +7,7 @@ MAX_LENGTH = 200
 
 User = get_user_model()
 
+
 class Tag(models.Model):
     """Модель тегов."""
 
