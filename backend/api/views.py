@@ -48,7 +48,6 @@ class RecipesVeiwSet(viewsets.ModelViewSet):
     filterset_class = RecipeFilter
 
     def get_serializer_class(self):
-        print(self.action)
         if self.action == 'create' or self.action == 'partial_update':
             return serializers.RecipesPOSTSerializer
         return serializers.RecipeSerializer
@@ -56,6 +55,8 @@ class RecipesVeiwSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
+
+class ExtraViewSet(RecipesVeiwSet):
     @action(detail=True, methods=['post', 'delete'])
     def favorite(self, request, pk=None):
         user = request.user
@@ -130,7 +131,6 @@ class RecipesVeiwSet(viewsets.ModelViewSet):
 
 
 class SubscribeViewSet(UserViewSet):
-
     permission_classes = (CustomUsers,)
 
     @action(detail=False)
@@ -148,10 +148,7 @@ class SubscribeViewSet(UserViewSet):
     def subscribe(self, request, id=None):
         user = self.request.user
         following = User.objects.get(id=id)
-        serializer = serializers.SubscribeSerializer(
-            following,
-            context={'request': request}
-        )
+#НУЖНА ПОМОЩЬ С ПЕРЕНОСОМ ЭТОЙ ЛОГИКИ В СЕРИАЛИЗАТОР
         if request.method == 'POST':
             if Subscribe.objects.filter(
                 user=user,
