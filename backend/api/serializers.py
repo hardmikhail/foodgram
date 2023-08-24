@@ -1,9 +1,12 @@
+from rest_framework import status, response
+from rest_framework.validators import ValidationError
 from django.core.files.base import ContentFile
 from rest_framework import serializers
 import webcolors
 import base64
-
 from django.contrib.auth import get_user_model
+
+from users.models import Subscribe
 from recipes.models import (Tag,
                             Ingredient,
                             Recipe,
@@ -210,6 +213,22 @@ class SubscribeSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
 
+    # def create(self, validated_data):
+    #     user = self.context['request'].user
+    #     following = validated_data
+    #     if Subscribe.objects.filter(
+    #             user=user,
+    #             following=following
+    #         ).exists():
+    #             raise ValidationError('Подписка уже оформлена!')
+    #     if following == self.request.user:
+    #         raise ValidationError('Нельзя подписаться на самого себя!')
+    #     subscribe = Subscribe.objects.create(
+    #         user=user,
+    #         following=following
+    #     )
+    #     return subscribe
+
     def get_is_subscribed(self, obj):
         user = self.context.get('request').user
         return user.follower.filter(following=obj).exists()
@@ -222,6 +241,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
             Recipe.objects.filter(author=obj),
             many=True
         ).data
+
 
     class Meta:
         fields = (

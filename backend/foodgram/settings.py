@@ -23,10 +23,11 @@ env = dotenv_values()
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env['SECRET_KEY']
-DEBUG = False
-ALLOWED_HOSTS = env['ALLOWED_HOSTS'].split()
-# ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '[::1]', 'host.docker.internal']
+# SECRET_KEY = env['SECRET_KEY']
+SECRET_KEY = 'django-insecure-$ir=#wc$&*pksl&^lenzy&x0d)i5=0@m-dp3q$7v6ee$qtnbfo'
+DEBUG = True
+# ALLOWED_HOSTS = env['ALLOWED_HOSTS'].split()
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '[::1]', 'host.docker.internal']
 
 
 # Application definition

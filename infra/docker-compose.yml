@@ -7,10 +7,10 @@ services:
   #   env_file: .env
   #   volumes:
   #     - pg_data:/var/lib/postgresql/data
-  backend:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
+  # backend:
+  #   build:
+  #     context: ../backend
+  #     dockerfile: Dockerfile
   frontend:
     build:
       context: ../frontend

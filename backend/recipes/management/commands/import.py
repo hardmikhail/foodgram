@@ -9,7 +9,7 @@ class Command(BaseCommand):
     help = 'Импорт данных из csv файлов'
 
     def import_ingredients(self):
-        if not Ingredient.objects.exists():
+        if Ingredient.objects.exists():
             print('Данные для Ingredient уже загружены')
         else:
             for row in DictReader(open(
