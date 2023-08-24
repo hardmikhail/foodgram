@@ -1,26 +1,33 @@
 from django.db import models
 from django.core.validators import MinValueValidator
+from django.contrib.auth import get_user_model
 
-from users.models import User
 
+MAX_LENGTH = 200
+
+User = get_user_model()
 
 class Tag(models.Model):
-    name = models.CharField(unique=True, max_length=200)
+    """Модель тегов."""
+
+    name = models.CharField(unique=True, max_length=MAX_LENGTH)
     color = models.CharField(unique=True, max_length=7)
-    slug = models.SlugField(unique=True, max_length=200)
+    slug = models.SlugField(unique=True, max_length=MAX_LENGTH)
 
     def __str__(self):
         return self.name
 
 
 class Recipe(models.Model):
+    """Модель рецептов."""
+
     tags = models.ManyToManyField(Tag)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     ingredients = models.ManyToManyField(
         'Ingredient',
         through='RecipeIngredient'
     )
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=MAX_LENGTH)
     image = models.ImageField(
         upload_to='recipes/images/',
         null=True,
@@ -37,14 +44,18 @@ class Recipe(models.Model):
 
 
 class Ingredient(models.Model):
-    name = models.CharField(max_length=200)
-    measurement_unit = models.CharField(max_length=200)
+    """Модель ингредиентов."""
+
+    name = models.CharField(max_length=MAX_LENGTH)
+    measurement_unit = models.CharField(max_length=MAX_LENGTH)
 
     def __str__(self):
         return self.name
 
 
 class RecipeIngredient(models.Model):
+    """Модель для связи рецептов с ингредиентами."""
+
     recipe = models.ForeignKey(
         Recipe,
         related_name='recipe_ingredients',
@@ -61,6 +72,8 @@ class RecipeIngredient(models.Model):
 
 
 class RecipeTag(models.Model):
+    """Модель для связи рецептов с тегами."""
+
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
 
@@ -68,19 +81,9 @@ class RecipeTag(models.Model):
         return self.recipe.name
 
 
-class Subscribe(models.Model):
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='follower'
-    )
-    following = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='following'
-    )
-
-    def __str__(self):
-        return f'{self.user} подписан на {self.following}'
-
-
 class Favorite(models.Model):
+    """Модель избранного."""
+
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='favorited'
     )
@@ -93,6 +96,8 @@ class Favorite(models.Model):
 
 
 class ShoppingCart(models.Model):
+    """Модель корзины покупок."""
+
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='shopping_cart'
     )

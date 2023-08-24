@@ -10,17 +10,19 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from .filters import RecipeFilter
 from .permissions import CustomUsers, CustomAuthor
-from users.models import User
+from users.models import Subscribe
+from . import serializers
+from django.contrib.auth import get_user_model
 from recipes.models import (
     Tag,
     Ingredient,
     Recipe,
-    Subscribe,
     Favorite,
     ShoppingCart,
     RecipeIngredient
 )
-from . import serializers
+
+User = get_user_model()
 
 
 class TagsVeiwSet(ReadOnlyModelViewSet):

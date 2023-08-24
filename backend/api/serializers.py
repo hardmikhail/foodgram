@@ -3,7 +3,7 @@ from rest_framework import serializers
 import webcolors
 import base64
 
-from users.models import User
+from django.contrib.auth import get_user_model
 from recipes.models import (Tag,
                             Ingredient,
                             Recipe,
@@ -12,6 +12,8 @@ from recipes.models import (Tag,
                             ShoppingCart
                             )
 from users.serializers import CustomUserSerializer
+
+User = get_user_model()
 
 
 class Hex2NameColor(serializers.Field):

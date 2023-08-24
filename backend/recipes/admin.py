@@ -1,11 +1,11 @@
 from django.contrib import admin
 
+from users.models import Subscribe
 from .models import (
     Tag,
     Ingredient,
     Recipe,
     RecipeIngredient,
-    Subscribe,
     Favorite,
     ShoppingCart
 )
