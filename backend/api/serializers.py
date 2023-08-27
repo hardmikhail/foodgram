@@ -138,28 +138,25 @@ class RecipesPOSTSerializer(serializers.ModelSerializer):
             ).exists()
         return False
 
+    def create_recipe(self, instance, ingredients):
+        ingredients_list = []
+        for ingredient_data in ingredients:
+            ingredients_list.append(
+                RecipeIngredient(
+                    recipe=instance,
+                    ingredient=ingredient_data['ingredient'],
+                    amount=ingredient_data['amount']
+                )
+            )
+        RecipeIngredient.objects.bulk_create(ingredients_list)
+
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
         instance = super().create(validated_data)
-
-# bulk_create
-        for ingredient_data in ingredients:
-            RecipeIngredient(
-                recipe=instance,
-                ingredient=ingredient_data['ingredient'],
-                amount=ingredient_data['amount']
-            ).save()
+        self.create_recipe(instance, ingredients)
         return instance
 
     def update(self, instance, validated_data):
-        instance.name = validated_data.get('name', instance.name)
-        instance.text = validated_data.get('text', instance.text)
-        instance.cooking_time = validated_data.get(
-            'cooking_time',
-            instance.cooking_time
-        )
-        instance.image = validated_data.get('image', instance.image)
-
         tags = validated_data.pop('tags')
         lst = []
         for tag in tags:
@@ -168,13 +165,8 @@ class RecipesPOSTSerializer(serializers.ModelSerializer):
         instance.tags.set(lst)
         instance.ingredients.clear()
         ingredients = validated_data.pop('ingredients')
-        for ingredient_data in ingredients:
-            RecipeIngredient(
-                recipe=instance,
-                ingredient=ingredient_data['ingredient'],
-                amount=ingredient_data['amount'],
-            ).save()
-
+        self.create_recipe(instance, ingredients)
+        super().update(instance, validated_data)
         instance.save()
         return instance
 
@@ -197,7 +189,7 @@ class RecipesPOSTSerializer(serializers.ModelSerializer):
 
 
 class RecipeShortSerializer(serializers.ModelSerializer):
-    image = Base64ImageField()
+    image = Base64ImageField(read_only=True)
 
     class Meta:
         fields = ('id', 'name', 'image', 'cooking_time')

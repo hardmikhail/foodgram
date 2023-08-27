@@ -1,5 +1,4 @@
 from django.http import HttpResponse
-from djoser.views import UserViewSet
 from rest_framework import viewsets, status, response, filters
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.validators import ValidationError
@@ -56,7 +55,11 @@ class RecipesVeiwSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
 
-class ExtraViewSet(RecipesVeiwSet):
+class FavoriteViewSet(viewsets.GenericViewSet):
+    queryset = Favorite.objects.all()
+    permission_classes = (CustomAuthor,)
+    serializer_class = serializers.RecipeShortSerializer
+
     @action(detail=True, methods=['post', 'delete'])
     def favorite(self, request, pk=None):
         user = request.user
@@ -84,6 +87,12 @@ class ExtraViewSet(RecipesVeiwSet):
             return response.Response(status=status.HTTP_204_NO_CONTENT)
         raise ValidationError('Избранное не найдено!')
 
+
+class ShoppingCartViewSet(viewsets.GenericViewSet):
+    queryset = ShoppingCart.objects.all()
+    permission_classes = (CustomAuthor,)
+    serializer_class = serializers.RecipeShortSerializer
+
     @action(detail=True, methods=['post', 'delete'])
     def shopping_cart(self, request, pk=None):
         user = request.user
@@ -109,7 +118,7 @@ class ExtraViewSet(RecipesVeiwSet):
         if shopping_cart.exists():
             shopping_cart.delete()
             return response.Response(status=status.HTTP_204_NO_CONTENT)
-        raise ValidationError('Избранное не найдено!')
+        raise ValidationError('Список покупок не найден!')
 
     @action(detail=False)
     def download_shopping_cart(self, request):
@@ -130,7 +139,8 @@ class ExtraViewSet(RecipesVeiwSet):
         return HttpResponse(shopping_list, content_type='text/plain')
 
 
-class SubscribeViewSet(UserViewSet):
+class SubscribeViewSet(viewsets.GenericViewSet):
+    queryset = User.objects.all()
     permission_classes = (CustomUsers,)
 
     @action(detail=False)
@@ -145,17 +155,16 @@ class SubscribeViewSet(UserViewSet):
         return self.get_paginated_response(serializer.data)
 
     @action(detail=True, methods=['post', 'delete'])
-    def subscribe(self, request, id=None):
+    def subscribe(self, request, pk=None):
         user = self.request.user
-        following = User.objects.get(id=id)
-    # НУЖНА ПОМОЩЬ С ПЕРЕНОСОМ ЭТОЙ ЛОГИКИ В СЕРИАЛИЗАТОР
+        following = User.objects.get(id=pk)
         if request.method == 'POST':
             if Subscribe.objects.filter(
                 user=user,
                 following=following
             ).exists():
                 raise ValidationError('Подписка уже оформлена!')
-            if User.objects.get(id=id) == self.request.user:
+            if User.objects.get(id=pk) == self.request.user:
                 raise ValidationError('Нельзя подписаться на самого себя!')
             Subscribe.objects.create(
                 user=user,
