@@ -1,0 +1,22 @@
+version: '3.3'
+volumes:
+  static:
+  pg_data:
+services:
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+    - db
+  db:
+    image: postgres:13.10
+    environment:
+      POSTGRES_DB: "django"
+      POSTGRES_USER: "django_user"
+      POSTGRES_PASSWORD: "mysecretpassword"
+    ports:
+      - "5432:5432"
+    
