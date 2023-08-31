@@ -63,8 +63,8 @@ jobs:
   #         tags: hardmikhail/foodgram_nginx:latest
   deploy:
     runs-on: ubuntu-latest
-    # needs:
-      # - build_and_push_to_docker_hub
+    needs:
+      - build_and_push_to_docker_hub
       # - build_frontend_and_push_to_docker_hub
       # - build_gateway_and_push_to_docker_hub
     # if: github.ref == 'refs/heads/master'
