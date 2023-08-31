@@ -13,7 +13,7 @@ class Command(BaseCommand):
             print('Данные для Ingredient уже загружены')
         else:
             for row in DictReader(open(
-                    BASE_DIR / '../data/ingredients.csv',
+                    BASE_DIR / 'ingredients.csv',
                     encoding='utf8')):
                 Ingredient.objects.create(
                     name=row['name'],
