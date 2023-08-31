@@ -27,7 +27,7 @@ env = dotenv_values()
 SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = True
 # ALLOWED_HOSTS = env['ALLOWED_HOSTS'].split()
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split()
 
 
 
