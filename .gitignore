@@ -138,3 +138,4 @@ backend/recipes/migrations/0002_remove_recipe_image.py
 backend/recipes/migrations/0003_auto_20230803_2219.py
 backend/recipes/migrations/0002_remove_recipe_image.py
 backend/recipes/migrations/0005_auto_20230810_1427.py
+.github/workflows/main.yml
