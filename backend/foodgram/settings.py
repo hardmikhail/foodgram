@@ -25,7 +25,7 @@ env = dotenv_values()
 # SECURITY WARNING: keep the secret key used in production secret!
 # SECRET_KEY = env['SECRET_KEY']
 SECRET_KEY = os.getenv('SECRET_KEY')
-DEBUG = True
+DEBUG = False
 # ALLOWED_HOSTS = env['ALLOWED_HOSTS'].split()
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split()
 
