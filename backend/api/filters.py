@@ -1,4 +1,5 @@
 from django_filters import rest_framework as filters
+from django_filters.widgets import CSVWidget
 
 from recipes.models import Recipe
 
@@ -9,14 +10,18 @@ class RecipeFilter(filters.FilterSet):
     is_in_shopping_cart = filters.BooleanFilter(
         method='filter_is_in_shopping_cart'
     )
-    tags = filters.CharFilter(method='filter_tags')
+    tags = filters.CharFilter(
+        distinct=True,
+        widget=CSVWidget,
+        method='filter_tags'
+    )
 
     class Meta:
         model = Recipe
         fields = ('author', 'tags')
 
     def filter_tags(self, queryset, name, value):
-        return queryset.filter(tags__slug__in=self.request.GET.getlist('tags'))
+        return queryset.filter(tags__slug__in=value)
 
     def filter_is_favorited(self, queryset, name, value):
         user = self.request.user
