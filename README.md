@@ -1,1 +1,3 @@
-# praktikum_new_diplom
+fdgram.myvnc.com
+login admin
+pass admin
