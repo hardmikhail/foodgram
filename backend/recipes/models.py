@@ -46,6 +46,7 @@ class Recipe(models.Model):
     class Meta:
         ordering = ['-id']
 
+
 class Ingredient(models.Model):
     """Модель ингредиентов."""
 
