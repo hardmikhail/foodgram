@@ -1,7 +1,6 @@
 from django_filters import rest_framework as filters
-from django_filters.widgets import CSVWidget
 
-from recipes.models import Recipe
+from recipes.models import Recipe, Tag
 
 
 class RecipeFilter(filters.FilterSet):
@@ -10,10 +9,10 @@ class RecipeFilter(filters.FilterSet):
     is_in_shopping_cart = filters.BooleanFilter(
         method='filter_is_in_shopping_cart'
     )
-    tags = filters.CharFilter(
-        distinct=True,
-        widget=CSVWidget,
-        method='filter_tags'
+    tags = filters.ModelMultipleChoiceFilter(
+        field_name='tags_slug',
+        to_field_name='slug',
+        queryset=Tag.objects.all()
     )
 
     class Meta:
