@@ -10,7 +10,7 @@ class RecipeFilter(filters.FilterSet):
         method='filter_is_in_shopping_cart'
     )
     tags = filters.ModelMultipleChoiceFilter(
-        field_name='tags_slug',
+        field_name='tags__slug',
         to_field_name='slug',
         queryset=Tag.objects.all()
     )
