@@ -171,6 +171,6 @@ DJOSER = {
         'current_user': 'users.serializers.CustomUserSerializer',
     },
     'PERMISSIONS': {
-        'user': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
+        'user': ['api.permissions.CustomUsers'],
     },
     'LOGIN_FIELD': 'email',}

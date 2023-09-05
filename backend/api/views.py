@@ -7,6 +7,7 @@ from rest_framework.permissions import AllowAny
 from django.db.models import Sum
 from django_filters.rest_framework import DjangoFilterBackend
 
+from api.paginators import CustomPagination
 from .filters import RecipeFilter
 from .permissions import CustomUsers, CustomAuthor
 from users.models import Subscribe
@@ -90,7 +91,7 @@ class FavoriteViewSet(viewsets.GenericViewSet):
 
 class ShoppingCartViewSet(viewsets.GenericViewSet):
     queryset = ShoppingCart.objects.all()
-    pagination_class = None
+    pagination_class = CustomPagination
     permission_classes = (CustomAuthor,)
     serializer_class = serializers.RecipeShortSerializer
 
