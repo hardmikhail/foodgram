@@ -43,7 +43,7 @@ class IngredientsViewSet(ReadOnlyModelViewSet):
 
 class RecipesVeiwSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    permission_classes = (CustomAuthor,)
+    # permission_classes = (CustomAuthor,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
@@ -58,7 +58,7 @@ class RecipesVeiwSet(viewsets.ModelViewSet):
 
 class FavoriteViewSet(viewsets.GenericViewSet):
     queryset = Favorite.objects.all()
-    permission_classes = (CustomAuthor,)
+    # permission_classes = (CustomAuthor,)
     serializer_class = serializers.RecipeShortSerializer
 
     @action(detail=True, methods=['post', 'delete'])
@@ -92,7 +92,7 @@ class FavoriteViewSet(viewsets.GenericViewSet):
 class ShoppingCartViewSet(viewsets.GenericViewSet):
     queryset = ShoppingCart.objects.all()
     pagination_class = CustomPagination
-    permission_classes = (CustomAuthor,)
+    # permission_classes = (CustomAuthor,)
     serializer_class = serializers.RecipeShortSerializer
 
     @action(detail=True, methods=['post', 'delete'])
@@ -143,7 +143,7 @@ class ShoppingCartViewSet(viewsets.GenericViewSet):
 
 class SubscribeViewSet(viewsets.GenericViewSet):
     queryset = User.objects.all()
-    permission_classes = (CustomUsers,)
+    # permission_classes = (CustomUsers,)
 
     @action(detail=False)
     def subscriptions(self, request):
