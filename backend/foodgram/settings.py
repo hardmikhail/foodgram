@@ -11,22 +11,18 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
-from dotenv import dotenv_values
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-env = dotenv_values()
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = env['SECRET_KEY']
 SECRET_KEY = os.getenv('SECRET_KEY')
-DEBUG = False
-# ALLOWED_HOSTS = env['ALLOWED_HOSTS'].split()
+DEBUG = True
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split()
 
 
@@ -95,7 +91,6 @@ DATABASES = {
         'USER': str(os.getenv('POSTGRES_USER')),
         'PASSWORD': str(os.getenv('POSTGRES_PASSWORD')),
         'HOST': str(os.getenv('DB_HOST')),
-        # 'HOST': 'localhost',
         'PORT': str(os.getenv('DB_PORT')),
     }
 }
@@ -158,14 +153,14 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated'
     ],
-    'DEFAULT_AUTHENTICATION_CLASSES': (
+    'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-    ),
+    ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 6,
-    'DEFAULT_FILTER_BACKENDS': (
+    'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
-    )
+    ]
 }
 
 DJOSER = {
@@ -175,5 +170,7 @@ DJOSER = {
         'user': 'users.serializers.CustomUserSerializer',
         'current_user': 'users.serializers.CustomUserSerializer',
     },
-    'LOGIN_FIELD': 'email'
-}
+    'PERMISSIONS': {
+        'user': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
+    },
+    'LOGIN_FIELD': 'email',}
