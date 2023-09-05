@@ -91,7 +91,7 @@ class FavoriteViewSet(viewsets.GenericViewSet):
 
 class ShoppingCartViewSet(viewsets.GenericViewSet):
     queryset = ShoppingCart.objects.all()
-    # pagination_class = CustomPagination
+    pagination_class = CustomPagination
     permission_classes = (CustomAuthor,)
     serializer_class = serializers.RecipeShortSerializer
 
