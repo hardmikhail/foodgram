@@ -151,7 +151,7 @@ CORS_URLS_REGEX = r'^/api/.*$'
 REST_FRAMEWORK = {
     'SEARCH_PARAM': 'name',
     'DEFAULT_PERMISSION_CLASSES': [
-        'api.permissions.CustomAllowAny'
+        'rest_framework.permissions.IsAuthentication'
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
@@ -171,6 +171,6 @@ DJOSER = {
         'current_user': 'users.serializers.CustomUserSerializer',
     },
     'PERMISSIONS': {
-        'user': ['api.permissions.CustomAllowAny'],
+        'user': ['rest_framework.permissions.IsAuthentication'],
     },
     'LOGIN_FIELD': 'email',}

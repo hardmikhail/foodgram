@@ -19,11 +19,6 @@ class CustomUsers(permissions.IsAuthenticatedOrReadOnly):
         return True
 
 
-class CustomAllowAny(permissions.AllowAny):
-    def has_object_permission(self, request, view, obj):
-        return True
-
-
 class CustomAuthor(permissions.IsAuthenticatedOrReadOnly):
     def has_object_permission(self, request, view, obj):
         return (request.method in permissions.SAFE_METHODS
