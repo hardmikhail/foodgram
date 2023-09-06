@@ -92,11 +92,10 @@ class FavoriteViewSet(viewsets.GenericViewSet):
 
 class ShoppingCartViewSet(viewsets.GenericViewSet):
     queryset = ShoppingCart.objects.all()
-    # pagination_class = CustomPagination
     permission_classes = (CustomAuthor,)
     serializer_class = serializers.RecipeShortSerializer
 
-    @action(detail=True, methods=['post', 'delete'])
+    @action(detail=True, methods=['post', 'delete'], pagination_class = None)
     def shopping_cart(self, request, pk=None):
         user = request.user
         recipe = Recipe.objects.get(id=pk)
