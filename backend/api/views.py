@@ -55,6 +55,53 @@ class RecipesVeiwSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+    
+    @action(detail=True, methods=['post', 'delete'])
+    def shopping_cart(self, request, pk=None):
+        self.pagination_class = None
+        user = request.user
+        recipe = Recipe.objects.get(id=pk)
+        if request.method == 'POST':
+            ShoppingCart.objects.create(
+                user=user,
+                recipe=recipe
+            )
+            serializer = serializers.RecipeShortSerializer(
+                recipe,
+                context={'request': request}
+            )
+            return response.Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED
+            )
+
+        shopping_cart = ShoppingCart.objects.filter(
+            user=user,
+            recipe=recipe
+        )
+        if shopping_cart.exists():
+            shopping_cart.delete()
+            return response.Response(status=status.HTTP_204_NO_CONTENT)
+        raise ValidationError('Список покупок не найден!')
+
+    @action(detail=False)
+    def download_shopping_cart(self, request):
+        self.pagination_class = None
+        shopping_list = 'Список покупок'
+        ingredients = (
+            RecipeIngredient.objects.filter(
+                recipe__shopping_cart__user=request.user)
+            .order_by('ingredient__name')
+            .values('ingredient__name', 'ingredient__measurement_unit')
+            .annotate(amount=Sum('amount'))
+        )
+        for ingredient in ingredients:
+            shopping_list += (
+                f'\n{ingredient["ingredient__name"]} - '
+                f'{ingredient["amount"]} '
+                f'{ingredient["ingredient__measurement_unit"]}'
+            )
+        return HttpResponse(shopping_list, content_type='text/plain')
 
 
 class FavoriteViewSet(viewsets.GenericViewSet):
@@ -90,55 +137,57 @@ class FavoriteViewSet(viewsets.GenericViewSet):
         raise ValidationError('Избранное не найдено!')
 
 
-class ShoppingCartViewSet(viewsets.GenericViewSet):
-    queryset = ShoppingCart.objects.all()
-    permission_classes = (CustomAuthor,)
-    serializer_class = serializers.RecipeShortSerializer
+# class ShoppingCartViewSet(viewsets.GenericViewSet):
+#     queryset = ShoppingCart.objects.all()
+#     permission_classes = (CustomAuthor,)
+#     serializer_class = serializers.RecipeShortSerializer
 
-    @action(detail=True, methods=['post', 'delete'], pagination_class = None)
-    def shopping_cart(self, request, pk=None):
-        user = request.user
-        recipe = Recipe.objects.get(id=pk)
-        if request.method == 'POST':
-            ShoppingCart.objects.create(
-                user=user,
-                recipe=recipe
-            )
-            serializer = serializers.RecipeShortSerializer(
-                recipe,
-                context={'request': request}
-            )
-            return response.Response(
-                serializer.data,
-                status=status.HTTP_201_CREATED
-            )
+#     @action(detail=True, methods=['post', 'delete'])
+#     def shopping_cart(self, request, pk=None):
+#         self.pagination_class = None
+#         user = request.user
+#         recipe = Recipe.objects.get(id=pk)
+#         if request.method == 'POST':
+#             ShoppingCart.objects.create(
+#                 user=user,
+#                 recipe=recipe
+#             )
+#             serializer = serializers.RecipeShortSerializer(
+#                 recipe,
+#                 context={'request': request}
+#             )
+#             return response.Response(
+#                 serializer.data,
+#                 status=status.HTTP_201_CREATED
+#             )
 
-        shopping_cart = ShoppingCart.objects.filter(
-            user=user,
-            recipe=recipe
-        )
-        if shopping_cart.exists():
-            shopping_cart.delete()
-            return response.Response(status=status.HTTP_204_NO_CONTENT)
-        raise ValidationError('Список покупок не найден!')
+#         shopping_cart = ShoppingCart.objects.filter(
+#             user=user,
+#             recipe=recipe
+#         )
+#         if shopping_cart.exists():
+#             shopping_cart.delete()
+#             return response.Response(status=status.HTTP_204_NO_CONTENT)
+#         raise ValidationError('Список покупок не найден!')
 
-    @action(detail=False)
-    def download_shopping_cart(self, request):
-        shopping_list = 'Список покупок'
-        ingredients = (
-            RecipeIngredient.objects.filter(
-                recipe__shopping_cart__user=request.user)
-            .order_by('ingredient__name')
-            .values('ingredient__name', 'ingredient__measurement_unit')
-            .annotate(amount=Sum('amount'))
-        )
-        for ingredient in ingredients:
-            shopping_list += (
-                f'\n{ingredient["ingredient__name"]} - '
-                f'{ingredient["amount"]} '
-                f'{ingredient["ingredient__measurement_unit"]}'
-            )
-        return HttpResponse(shopping_list, content_type='text/plain')
+#     @action(detail=False)
+#     def download_shopping_cart(self, request):
+#         self.pagination_class = None
+#         shopping_list = 'Список покупок'
+#         ingredients = (
+#             RecipeIngredient.objects.filter(
+#                 recipe__shopping_cart__user=request.user)
+#             .order_by('ingredient__name')
+#             .values('ingredient__name', 'ingredient__measurement_unit')
+#             .annotate(amount=Sum('amount'))
+#         )
+#         for ingredient in ingredients:
+#             shopping_list += (
+#                 f'\n{ingredient["ingredient__name"]} - '
+#                 f'{ingredient["amount"]} '
+#                 f'{ingredient["ingredient__measurement_unit"]}'
+#             )
+#         return HttpResponse(shopping_list, content_type='text/plain')
 
 
 class SubscribeViewSet(viewsets.GenericViewSet):
