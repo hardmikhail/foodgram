@@ -22,10 +22,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY')
-# SECRET_KEY = 'django-insecure-$ir=#wc$&*pksl&^lenzy&x0d)i5=0@m-dp3q$7v6ee$qtnbfo'
-DEBUG = True
+DEBUG = False
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split()
-# ALLOWED_HOSTS = '127.0.0.1 localhost [::1] host.docker.internal fdgram.myvnc.com'.split()
 
 
 # Application definition
@@ -158,8 +156,6 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
-    # 'DEFAULT_PAGINATION_CLASS': 'api.pagination.CustomPagination',
-    # 'PAGE_SIZE': 6,
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
     ]

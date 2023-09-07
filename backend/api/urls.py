@@ -6,7 +6,6 @@ from .views import (
     IngredientsViewSet,
     RecipesVeiwSet,
     SubscribeViewSet,
-    # ShoppingCartViewSet,
     FavoriteViewSet,
 )
 
@@ -15,7 +14,6 @@ router = DefaultRouter()
 router.register(r'tags', TagsVeiwSet)
 router.register(r'ingredients', IngredientsViewSet)
 router.register(r'recipes', RecipesVeiwSet)
-# router.register(r'recipes', ShoppingCartViewSet)
 router.register(r'recipes', FavoriteViewSet)
 router.register(r'users', SubscribeViewSet)
 router.register(r'users', UserViewSet)
