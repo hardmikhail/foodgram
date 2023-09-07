@@ -55,7 +55,7 @@ class RecipesVeiwSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
-    
+
     @action(detail=True, methods=['post', 'delete'])
     def shopping_cart(self, request, pk=None):
         self.pagination_class = None
