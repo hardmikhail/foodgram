@@ -144,7 +144,7 @@ class SubscribeViewSet(viewsets.GenericViewSet):
 
     @action(detail=False)
     def subscriptions(self, request):
-        recipes_limit = self.request.GET.get('recipes_limit')
+        recipes_limit = int(self.request.GET.get('recipes_limit'))
         subscriptions = User.objects.filter(following__user=request.user)[:recipes_limit]
         pages = self.paginate_queryset(subscriptions)
         serializer = serializers.SubscribeSerializer(
