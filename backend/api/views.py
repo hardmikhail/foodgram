@@ -143,7 +143,8 @@ class SubscribeViewSet(viewsets.GenericViewSet):
     pagination_class = CustomPagination
 
     @action(detail=False)
-    def subscriptions(self, request, recipes_limit):
+    def subscriptions(self, request):
+        recipes_limit = self.request.GET.get('recipes_limit')
         subscriptions = User.objects.filter(following__user=request.user)[:recipes_limit]
         pages = self.paginate_queryset(subscriptions)
         serializer = serializers.SubscribeSerializer(
