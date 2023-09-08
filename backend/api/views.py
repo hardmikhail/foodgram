@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny
 from django.db.models import Sum
 from django_filters.rest_framework import DjangoFilterBackend
 
-from api.pagination import CustomPagination, CustomSubscribePagination
+from api.pagination import CustomPagination
 from .filters import RecipeFilter
 from .permissions import CustomUsers, CustomAuthor
 from users.models import Subscribe
@@ -140,11 +140,11 @@ class FavoriteViewSet(viewsets.GenericViewSet):
 class SubscribeViewSet(viewsets.GenericViewSet):
     queryset = User.objects.all()
     permission_classes = (CustomUsers,)
-    pagination_class = CustomSubscribePagination
+    pagination_class = CustomPagination
 
     @action(detail=False)
-    def subscriptions(self, request):
-        subscriptions = User.objects.filter(following__user=request.user)
+    def subscriptions(self, request, recipes_limit):
+        subscriptions = User.objects.filter(following__user=request.user)[:recipes_limit]
         pages = self.paginate_queryset(subscriptions)
         serializer = serializers.SubscribeSerializer(
             pages,
