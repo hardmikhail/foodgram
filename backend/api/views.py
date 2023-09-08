@@ -140,6 +140,7 @@ class FavoriteViewSet(viewsets.GenericViewSet):
 class SubscribeViewSet(viewsets.GenericViewSet):
     queryset = User.objects.all()
     permission_classes = (CustomUsers,)
+    pagination_class = CustomPagination
 
     @action(detail=False)
     def subscriptions(self, request):

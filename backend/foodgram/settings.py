@@ -21,9 +21,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY')
-DEBUG = False
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split()
+# SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = 'django-insecure-$ir=#wc$&*pksl&^lenzy&x0d)i5=0@m-dp3q$7v6ee$qtnbfo'
+DEBUG = True
+# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split()
+ALLOWED_HOSTS = '127.0.0.1 localhost [::1] host.docker.internal fdgram.myvnc.com'.split()
 
 
 # Application definition
@@ -81,18 +83,18 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': BASE_DIR / 'db.sqlite3',
-    # }
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': str(os.getenv('POSTGRES_DB', 'django')),
-        'USER': str(os.getenv('POSTGRES_USER', 'django_user')),
-        'PASSWORD': str(os.getenv('POSTGRES_PASSWORD', 'mysecretpassword')),
-        'HOST': str(os.getenv('DB_HOST', 'localhost')),
-        'PORT': str(os.getenv('DB_PORT', '5432')),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #     'NAME': str(os.getenv('POSTGRES_DB', 'django')),
+    #     'USER': str(os.getenv('POSTGRES_USER', 'django_user')),
+    #     'PASSWORD': str(os.getenv('POSTGRES_PASSWORD', 'mysecretpassword')),
+    #     'HOST': str(os.getenv('DB_HOST', 'localhost')),
+    #     'PORT': str(os.getenv('DB_PORT', '5432')),
+    # }
 }
 
 
