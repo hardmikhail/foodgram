@@ -214,7 +214,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
         recipes_limit = request.query_params.get('recipes_limit')
         recipes = Recipe.objects.filter(author=obj)
         if recipes_limit:
-            recipes = recipes[int(recipes_limit)]
+            recipes = recipes[:int(recipes_limit)]
         return RecipeShortSerializer(
             recipes,
             many=True
