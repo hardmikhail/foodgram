@@ -210,8 +210,10 @@ class SubscribeSerializer(serializers.ModelSerializer):
         return Recipe.objects.filter(author=obj).count()
 
     def get_recipes(self, obj):
+        request = self.context.get('request')
+        recipes_limit = int(request.query_params.get('recipes_limit'))
         return RecipeShortSerializer(
-            Recipe.objects.filter(author=obj),
+            Recipe.objects.filter(author=obj)[:recipes_limit],
             many=True
         ).data
 
