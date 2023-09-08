@@ -4,28 +4,28 @@ volumes:
   pg_data:
   media:
 services:
-  # db:
-  #   image: postgres:13.10
-  #   environment:
-  #     POSTGRES_DB: "django"
-  #     POSTGRES_USER: "django_user"
-  #     POSTGRES_PASSWORD: "mysecretpassword"
-  #   ports:
-  #     - "5432:5432"
-  #   volumes:
-  #     - pg_data:/var/lib/postgresql/data
-  # backend:
-  #   build:
-  #     context: ../backend
-  #     dockerfile: Dockerfile
-  #   volumes:
-  #     - static:/backend_static
-  #     - media:/app/media
+  db:
+    image: postgres:13.10
+    environment:
+      POSTGRES_DB: "django"
+      POSTGRES_USER: "django_user"
+      POSTGRES_PASSWORD: "mysecretpassword"
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    volumes:
+      - static:/backend_static
+      - media:/app/media
     # command: cp -r /app/static/ /backend_static/
     # ports:
     #   - 8000:8000
-    # depends_on:
-    #   - db
+    depends_on:
+      - db
   frontend:
     build:
       context: ../frontend
