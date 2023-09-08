@@ -22,8 +22,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY')
-DEBUG = False
+# SECRET_KEY = 'django-insecure-$ir=#wc$&*pksl&^lenzy&x0d)i5=0@m-dp3q$7v6ee$qtnbfo'
+DEBUG = True
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split()
+# ALLOWED_HOSTS = '127.0.0.1 localhost [::1] host.docker.internal fdgram.myvnc.com'.split()
 
 
 # Application definition
