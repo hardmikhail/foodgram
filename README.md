@@ -33,9 +33,3 @@ DB_PORT =
 
 После выполнить `docker compose up` для скачивания образов с профиля DockerHub и запуска контейнеров.
 
-
-fdgram.myvnc.com
-
-login admin
-
-pass admin
